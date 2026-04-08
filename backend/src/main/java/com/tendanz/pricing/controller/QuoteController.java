@@ -17,11 +17,9 @@ import java.util.List;
  * Handles all quote-related API endpoints.
  *
  * TODO: Implement the following endpoints:
- * - POST /api/quotes - Create a new quote
- * - GET /api/quotes/{id} - Get a quote by ID
- * - GET /api/quotes - Get all quotes with optional filters
- * - Use proper HTTP status codes
- * - Implement error handling
+ * - POST /api/quotes       -> Create a new quote (call PricingService.calculateQuote)
+ * - GET  /api/quotes/{id}  -> Already implemented below as reference
+ * - GET  /api/quotes       -> Get all quotes with optional filters (productId, minPrice)
  */
 @RestController
 @RequestMapping("/api/quotes")
@@ -32,37 +30,26 @@ public class QuoteController {
     private final PricingService pricingService;
 
     /**
-     * Create a new quote.
+     * TODO: Create a new quote.
      *
-     * TODO: Implement POST endpoint
-     * - Accept QuoteRequest with @Valid annotation
+     * Requirements:
+     * - Accept a QuoteRequest body with @Valid validation
      * - Call PricingService.calculateQuote()
-     * - Return 201 CREATED with QuoteResponse
-     * - Handle validation errors with 400 BAD_REQUEST
+     * - Return HTTP 201 CREATED with the QuoteResponse
+     * - Let the GlobalExceptionHandler handle errors
      *
      * @param request the quote request
-     * @return the created quote response
+     * @return the created quote response with 201 status
      */
     @PostMapping
     public ResponseEntity<QuoteResponse> createQuote(@Valid @RequestBody QuoteRequest request) {
-        log.info("Creating new quote for product ID: {}", request.getProductId());
-        try {
-            QuoteResponse response = pricingService.calculateQuote(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            log.error("Error creating quote: {}", e.getMessage());
-            throw e;
-        }
+        // TODO: Implement this endpoint
+        throw new UnsupportedOperationException("TODO: Implement createQuote endpoint");
     }
 
     /**
      * Get a quote by ID.
-     *
-     * TODO: Implement GET endpoint with path variable
-     * - Accept quote ID from path
-     * - Call PricingService.getQuote(id)
-     * - Return 200 OK with QuoteResponse
-     * - Return 404 NOT_FOUND if quote doesn't exist
+     * This endpoint is provided as a reference implementation.
      *
      * @param id the quote ID
      * @return the quote response
@@ -70,28 +57,25 @@ public class QuoteController {
     @GetMapping("/{id}")
     public ResponseEntity<QuoteResponse> getQuote(@PathVariable Long id) {
         log.info("Fetching quote with ID: {}", id);
-        try {
-            QuoteResponse response = pricingService.getQuote(id);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            log.error("Quote not found: {}", e.getMessage());
-            return ResponseEntity.notFound().build();
-        }
+        QuoteResponse response = pricingService.getQuote(id);
+        return ResponseEntity.ok(response);
     }
 
     /**
-     * Get all quotes with optional filters.
+     * TODO: Get all quotes with optional filters.
      *
-     * TODO: Implement GET endpoint without path variable
-     * - Support optional query parameters: productId, minPrice
-     * - Implement filtering logic
-     * - Return 200 OK with list of QuoteResponse
+     * Requirements:
+     * - Support optional query parameter: productId (Long) to filter by product
+     * - Support optional query parameter: minPrice (Double) to filter by minimum final price
+     * - Use QuoteRepository methods for querying
+     * - Convert Quote entities to QuoteResponse DTOs
+     * - Return HTTP 200 OK with the list
      *
-     * Query examples:
-     * - GET /api/quotes
-     * - GET /api/quotes?productId=1
-     * - GET /api/quotes?minPrice=500
-     * - GET /api/quotes?productId=1&minPrice=500
+     * Examples:
+     * - GET /api/quotes                          -> all quotes
+     * - GET /api/quotes?productId=1              -> quotes for product 1
+     * - GET /api/quotes?minPrice=500             -> quotes with finalPrice >= 500
+     * - GET /api/quotes?productId=1&minPrice=500 -> combined filters
      *
      * @param productId optional product ID filter
      * @param minPrice optional minimum price filter
@@ -101,11 +85,7 @@ public class QuoteController {
     public ResponseEntity<List<QuoteResponse>> getAllQuotes(
             @RequestParam(required = false) Long productId,
             @RequestParam(required = false) Double minPrice) {
-        log.info("Fetching all quotes with filters - productId: {}, minPrice: {}", productId, minPrice);
         // TODO: Implement filtering and retrieval logic
-        // TODO: Use QuoteRepository methods to query data
-        // TODO: Convert entities to response DTOs
-        // TODO: Return appropriate HTTP status codes
-        return ResponseEntity.ok(List.of());
+        throw new UnsupportedOperationException("TODO: Implement getAllQuotes endpoint");
     }
 }

@@ -1,59 +1,29 @@
 <div class="quote-form-container">
   <h2>Create New Quote</h2>
 
-  <!-- TODO: Display success message -->
+  <!-- Success message -->
   <div *ngIf="successMessage" class="alert success">
     {{ successMessage }}
   </div>
 
-  <!-- TODO: Display error message -->
+  <!-- Error message -->
   <div *ngIf="errorMessage" class="alert error">
     {{ errorMessage }}
   </div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="form">
-    <!-- Customer Name -->
+    <!-- Client Name -->
     <div class="form-group">
-      <label for="customerName">Customer Name *</label>
+      <label for="clientName">Client Name *</label>
       <input
         type="text"
-        id="customerName"
-        formControlName="customerName"
-        placeholder="Enter customer name"
-        [class.invalid]="isFieldInvalid('customerName')"
+        id="clientName"
+        formControlName="clientName"
+        placeholder="Enter client name"
+        [class.invalid]="isFieldInvalid('clientName')"
       />
-      <div *ngIf="isFieldInvalid('customerName')" class="form-error">
-        {{ getErrorMessage('customerName') }}
-      </div>
-    </div>
-
-    <!-- Email -->
-    <div class="form-group">
-      <label for="email">Email *</label>
-      <input
-        type="email"
-        id="email"
-        formControlName="email"
-        placeholder="Enter email address"
-        [class.invalid]="isFieldInvalid('email')"
-      />
-      <div *ngIf="isFieldInvalid('email')" class="form-error">
-        {{ getErrorMessage('email') }}
-      </div>
-    </div>
-
-    <!-- Phone -->
-    <div class="form-group">
-      <label for="phone">Phone *</label>
-      <input
-        type="tel"
-        id="phone"
-        formControlName="phone"
-        placeholder="Enter phone number"
-        [class.invalid]="isFieldInvalid('phone')"
-      />
-      <div *ngIf="isFieldInvalid('phone')" class="form-error">
-        {{ getErrorMessage('phone') }}
+      <div *ngIf="isFieldInvalid('clientName')" class="form-error">
+        {{ getErrorMessage('clientName') }}
       </div>
     </div>
 
@@ -78,78 +48,34 @@
 
     <!-- Zone -->
     <div class="form-group">
-      <label for="zone">Zone *</label>
+      <label for="zoneCode">Zone *</label>
       <select
-        id="zone"
-        formControlName="zone"
-        [class.invalid]="isFieldInvalid('zone')"
+        id="zoneCode"
+        formControlName="zoneCode"
+        [class.invalid]="isFieldInvalid('zoneCode')"
       >
         <option value="">-- Select Zone --</option>
-        <option *ngFor="let zone of zones" [value]="zone">
-          {{ zone }}
+        <option *ngFor="let zone of zones" [value]="zone.code">
+          {{ zone.name }}
         </option>
       </select>
-      <div *ngIf="isFieldInvalid('zone')" class="form-error">
-        {{ getErrorMessage('zone') }}
+      <div *ngIf="isFieldInvalid('zoneCode')" class="form-error">
+        {{ getErrorMessage('zoneCode') }}
       </div>
     </div>
 
-    <!-- Age -->
+    <!-- Client Age -->
     <div class="form-group">
-      <label for="age">Age *</label>
+      <label for="clientAge">Client Age *</label>
       <input
         type="number"
-        id="age"
-        formControlName="age"
-        placeholder="Enter age (18-100)"
-        [class.invalid]="isFieldInvalid('age')"
+        id="clientAge"
+        formControlName="clientAge"
+        placeholder="Enter age (18-99)"
+        [class.invalid]="isFieldInvalid('clientAge')"
       />
-      <div *ngIf="isFieldInvalid('age')" class="form-error">
-        {{ getErrorMessage('age') }}
-      </div>
-    </div>
-
-    <!-- Insured Amount -->
-    <div class="form-group">
-      <label for="insuredAmount">Insured Amount (TND) *</label>
-      <input
-        type="number"
-        id="insuredAmount"
-        formControlName="insuredAmount"
-        placeholder="Enter insured amount (minimum 1000)"
-        [class.invalid]="isFieldInvalid('insuredAmount')"
-      />
-      <div *ngIf="isFieldInvalid('insuredAmount')" class="form-error">
-        {{ getErrorMessage('insuredAmount') }}
-      </div>
-    </div>
-
-    <!-- Start Date -->
-    <div class="form-group">
-      <label for="startDate">Start Date *</label>
-      <input
-        type="date"
-        id="startDate"
-        formControlName="startDate"
-        [class.invalid]="isFieldInvalid('startDate')"
-      />
-      <div *ngIf="isFieldInvalid('startDate')" class="form-error">
-        {{ getErrorMessage('startDate') }}
-      </div>
-    </div>
-
-    <!-- Duration -->
-    <div class="form-group">
-      <label for="duration">Duration (months) *</label>
-      <input
-        type="number"
-        id="duration"
-        formControlName="duration"
-        placeholder="Enter duration in months"
-        [class.invalid]="isFieldInvalid('duration')"
-      />
-      <div *ngIf="isFieldInvalid('duration')" class="form-error">
-        {{ getErrorMessage('duration') }}
+      <div *ngIf="isFieldInvalid('clientAge')" class="form-error">
+        {{ getErrorMessage('clientAge') }}
       </div>
     </div>
 
@@ -160,7 +86,6 @@
         class="primary"
         [disabled]="loading"
       >
-        <!-- TODO: Show loading spinner while submitting -->
         <span *ngIf="!loading">Calculate Quote</span>
         <span *ngIf="loading" class="loading"></span>
       </button>

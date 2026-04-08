@@ -1,7 +1,7 @@
 <div class="quote-list-container">
   <h2>Quotes</h2>
 
-  <!-- TODO: Display error message -->
+  <!-- Error -->
   <div *ngIf="errorMessage" class="alert error">
     {{ errorMessage }}
   </div>
@@ -11,9 +11,8 @@
     <div class="filter-group">
       <label for="productFilter">Product:</label>
       <select id="productFilter" [(ngModel)]="selectedProductId" (change)="applyFilters()">
-        <option [value]="null">-- All Products --</option>
-        <!-- TODO: Populate with products from API -->
-        <option *ngFor="let product of products" [value]="product.id">
+        <option [ngValue]="null">-- All Products --</option>
+        <option *ngFor="let product of products" [ngValue]="product.id">
           {{ product.name }}
         </option>
       </select>
@@ -33,7 +32,7 @@
     <button class="secondary" (click)="resetFilters()">Reset Filters</button>
   </div>
 
-  <!-- TODO: Show loading spinner -->
+  <!-- Loading -->
   <div *ngIf="loading" class="loading-container">
     <div class="loading"></div>
     <p>Loading quotes...</p>
@@ -60,7 +59,7 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Customer Name</th>
+          <th>Client Name</th>
           <th>Product</th>
           <th>Zone</th>
           <th>Final Price (TND)</th>
@@ -68,12 +67,11 @@
         </tr>
       </thead>
       <tbody>
-        <!-- TODO: Populate table with quotes -->
-        <tr *ngFor="let quote of filteredQuotes" (click)="viewQuote(quote.id)" class="clickable">
-          <td>{{ quote.id }}</td>
-          <td>{{ quote.customerName }}</td>
+        <tr *ngFor="let quote of filteredQuotes" (click)="viewQuote(quote.quoteId)" class="clickable">
+          <td>{{ quote.quoteId }}</td>
+          <td>{{ quote.clientName }}</td>
           <td>{{ quote.productName }}</td>
-          <td>{{ quote.zone }}</td>
+          <td>{{ quote.zoneName }}</td>
           <td class="price">{{ quote.finalPrice | number:'1.2-2' }}</td>
           <td>{{ quote.createdAt | date:'short' }}</td>
         </tr>

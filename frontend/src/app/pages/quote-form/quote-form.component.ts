@@ -6,34 +6,29 @@ import { QuoteService } from '../../services/quote.service';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
 
-const ZONES = ['Tunis', 'Sfax', 'Sousse'];
+/**
+ * Available zones with their codes (must match backend data.sql)
+ */
+const ZONES = [
+  { code: 'TUN', name: 'Grand Tunis' },
+  { code: 'SFX', name: 'Sfax' },
+  { code: 'SOU', name: 'Sousse' }
+];
 
 /**
  * Component for creating a new quote
  *
  * TODO: Candidate must implement the following:
- * 1. Initialize reactive form with FormGroup containing:
- *    - customerName: required string
- *    - email: required string, email format
- *    - phone: required string
- *    - productId: required number
- *    - zone: required string
- *    - age: required number, min 18, max 100
- *    - insuredAmount: required number, min 1000
- *    - startDate: required date
- *    - duration: required number, min 1 month
+ * 1. Load products from ProductService on init and populate the product dropdown
  *
- * 2. Load products from ProductService and populate product dropdown
- *
- * 3. Implement form submission:
+ * 2. Implement form submission in onSubmit():
  *    - Validate form before submission
+ *    - Build a QuoteRequest from form values
  *    - Call QuoteService.createQuote()
  *    - Show success/error message
  *    - Navigate to quote detail page on success
  *
- * 4. Display validation errors for each field
- *
- * 5. Show loading state while API request is in progress
+ * 3. Handle loading state while API request is in progress
  */
 @Component({
   selector: 'app-quote-form',
@@ -58,15 +53,10 @@ export class QuoteFormComponent implements OnInit {
     private router: Router
   ) {
     this.form = this.fb.group({
-      customerName: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required]],
+      clientName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       productId: ['', [Validators.required]],
-      zone: ['', [Validators.required]],
-      age: ['', [Validators.required, Validators.min(18), Validators.max(100)]],
-      insuredAmount: ['', [Validators.required, Validators.min(1000)]],
-      startDate: ['', [Validators.required]],
-      duration: ['', [Validators.required, Validators.min(1)]]
+      zoneCode: ['', [Validators.required]],
+      clientAge: ['', [Validators.required, Validators.min(18), Validators.max(99)]]
     });
   }
 
@@ -80,19 +70,22 @@ export class QuoteFormComponent implements OnInit {
    * Submit the form
    *
    * TODO: Implement form submission
-   * - Check if form is valid
+   * - Check if form is valid (mark all fields as touched if invalid)
    * - Set loading state
-   * - Call quoteService.createQuote()
-   * - Handle success: show message and navigate to detail page
-   * - Handle error: show error message
+   * - Build QuoteRequest: { productId: number, zoneCode: string, clientName: string, clientAge: number }
+   * - Call quoteService.createQuote(request)
+   * - On success: show message, navigate to /quotes/{quoteId}
+   * - On error: show error message
+   * - Always reset loading state
    */
   onSubmit(): void {
+    this.submitted = true;
     // TODO: Implement form submission
     console.log('Form submitted (TODO: implement)');
   }
 
   /**
-   * Check if a form field has an error
+   * Check if a form field has an error (provided helper)
    */
   hasError(fieldName: string, errorType: string): boolean {
     const field = this.form.get(fieldName);
@@ -100,7 +93,7 @@ export class QuoteFormComponent implements OnInit {
   }
 
   /**
-   * Check if a form field is invalid
+   * Check if a form field is invalid (provided helper)
    */
   isFieldInvalid(fieldName: string): boolean {
     const field = this.form.get(fieldName);
@@ -108,28 +101,16 @@ export class QuoteFormComponent implements OnInit {
   }
 
   /**
-   * Get error message for a field
+   * Get error message for a field (provided helper)
    */
   getErrorMessage(fieldName: string): string {
     const field = this.form.get(fieldName);
-    if (!field || !field.errors) {
-      return '';
-    }
+    if (!field || !field.errors) return '';
 
-    if (field.hasError('required')) {
-      return `${fieldName} is required`;
-    }
-    if (field.hasError('email')) {
-      return 'Please enter a valid email address';
-    }
-    if (field.hasError('min')) {
-      const min = field.errors['min'].min;
-      return `${fieldName} must be at least ${min}`;
-    }
-    if (field.hasError('max')) {
-      const max = field.errors['max'].max;
-      return `${fieldName} cannot exceed ${max}`;
-    }
+    if (field.hasError('required')) return `This field is required`;
+    if (field.hasError('minlength')) return `Minimum ${field.errors['minlength'].requiredLength} characters`;
+    if (field.hasError('min')) return `Minimum value is ${field.errors['min'].min}`;
+    if (field.hasError('max')) return `Maximum value is ${field.errors['max'].max}`;
 
     return 'Invalid input';
   }

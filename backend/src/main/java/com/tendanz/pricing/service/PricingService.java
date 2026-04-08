@@ -40,95 +40,33 @@ public class PricingService {
      * Calculate a quote based on the provided request.
      *
      * TODO: Implement the calculateQuote method with the following logic:
-     * 1. Validate and load the Product and Zone from repositories
-     * 2. Load the PricingRule for the product
-     * 3. Determine the age category based on clientAge
-     * 4. Calculate base price using the rule's base rate
-     * 5. Apply age factor multiplier based on age category
-     * 6. Apply zone risk coefficient
-     * 7. Create a Quote entity with calculated prices
-     * 8. Store applied rules as a JSON string
-     * 9. Save the quote and return QuoteResponse
+     * 1. Validate and load the Product from productRepository (throw IllegalArgumentException if not found)
+     * 2. Validate and load the Zone from zoneRepository by code (throw IllegalArgumentException if not found)
+     * 3. Load the PricingRule for the product from pricingRuleRepository
+     * 4. Determine the age category using AgeCategory.fromAge(clientAge)
+     * 5. Get the appropriate age factor using getAgeFactor() helper below
+     * 6. Calculate: finalPrice = baseRate × ageFactor × zoneRiskCoefficient (rounded to 2 decimals)
+     * 7. Build an appliedRules list describing each step of the calculation
+     * 8. Create and save a Quote entity with all calculated values
+     * 9. Return a QuoteResponse using the mapToResponse() helper below
      *
-     * Age factor mapping:
-     * - YOUNG (18-24): ageFactorYoung
-     * - ADULT (25-45): ageFactorAdult
-     * - SENIOR (46-65): ageFactorSenior
-     * - ELDERLY (66-99): ageFactorElderly
-     *
-     * Final Price Calculation:
-     * finalPrice = baseRate × ageFactor × zoneRiskCoefficient
-     *
-     * @param request the quote request containing product, zone, and client info
+     * @param request the quote request containing productId, zoneCode, clientName, clientAge
      * @return the calculated quote response
-     * @throws IllegalArgumentException if product or zone not found
+     * @throws IllegalArgumentException if product, zone, or pricing rule not found
      */
     @Transactional
     public QuoteResponse calculateQuote(QuoteRequest request) {
-        log.info("Calculating quote for product ID: {}, zone: {}, age: {}",
-                request.getProductId(), request.getZoneCode(), request.getClientAge());
-
-        // TODO: Load Product
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + request.getProductId()));
-
-        // TODO: Load Zone
-        Zone zone = zoneRepository.findByCode(request.getZoneCode())
-                .orElseThrow(() -> new IllegalArgumentException("Zone not found with code: " + request.getZoneCode()));
-
-        // TODO: Load PricingRule
-        PricingRule pricingRule = pricingRuleRepository.findByProductId(request.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Pricing rule not found for product ID: " + request.getProductId()));
-
-        // TODO: Determine age category and get appropriate age factor
-        AgeCategory ageCategory = AgeCategory.fromAge(request.getClientAge());
-        BigDecimal ageFactor = getAgeFactor(pricingRule, ageCategory);
-
-        // TODO: Calculate base price
-        BigDecimal basePrice = pricingRule.getBaseRate();
-
-        // TODO: Apply age factor and zone coefficient
-        BigDecimal finalPrice = basePrice
-                .multiply(ageFactor)
-                .multiply(zone.getRiskCoefficient())
-                .setScale(2, RoundingMode.HALF_UP);
-
-        // TODO: Create applied rules list
-        List<String> appliedRules = new ArrayList<>();
-        appliedRules.add("Base Rate: " + basePrice);
-        appliedRules.add("Age Factor (" + ageCategory + "): " + ageFactor);
-        appliedRules.add("Zone Risk (" + zone.getName() + "): " + zone.getRiskCoefficient());
-        appliedRules.add("Final Price: " + finalPrice);
-
-        // TODO: Convert rules to JSON string
-        String rulesJson = convertRulesToJson(appliedRules);
-
-        // TODO: Create and save Quote
-        Quote quote = Quote.builder()
-                .product(product)
-                .zone(zone)
-                .clientName(request.getClientName())
-                .clientAge(request.getClientAge())
-                .basePrice(basePrice)
-                .finalPrice(finalPrice)
-                .appliedRules(rulesJson)
-                .build();
-
-        Quote savedQuote = quoteRepository.save(quote);
-        log.info("Quote saved successfully with ID: {}", savedQuote.getId());
-
-        // TODO: Convert to response
-        return mapToResponse(savedQuote, appliedRules);
+        // TODO: Implement this method
+        throw new UnsupportedOperationException("TODO: Implement calculateQuote");
     }
 
     /**
-     * Get the age factor for a specific age category.
+     * Get the age factor for a specific age category from a pricing rule.
+     * This helper is provided — use it in your calculateQuote implementation.
      *
-     * TODO: Implement the mapping logic
-     *
-     * @param pricingRule the pricing rule
-     * @param ageCategory the age category
-     * @return the appropriate age factor
+     * @param pricingRule the pricing rule containing age factors
+     * @param ageCategory the age category (YOUNG, ADULT, SENIOR, ELDERLY)
+     * @return the appropriate age factor as BigDecimal
      */
     private BigDecimal getAgeFactor(PricingRule pricingRule, AgeCategory ageCategory) {
         return switch (ageCategory) {
@@ -140,9 +78,8 @@ public class PricingService {
     }
 
     /**
-     * Convert the list of applied rules to a JSON string.
-     *
-     * TODO: Implement JSON serialization
+     * Convert a list of applied rules to a JSON string for storage.
+     * This helper is provided — use it in your calculateQuote implementation.
      *
      * @param rules the list of rule descriptions
      * @return the JSON string representation
@@ -158,12 +95,11 @@ public class PricingService {
 
     /**
      * Convert a Quote entity to a QuoteResponse DTO.
-     *
-     * TODO: Implement the mapping
+     * This helper is provided — use it in your calculateQuote implementation.
      *
      * @param quote the quote entity
      * @param appliedRules the list of applied rules
-     * @return the quote response
+     * @return the quote response DTO
      */
     private QuoteResponse mapToResponse(Quote quote, List<String> appliedRules) {
         return QuoteResponse.builder()
@@ -181,9 +117,11 @@ public class PricingService {
 
     /**
      * Get a quote by ID.
+     * This method is provided as a reference for how to retrieve and return quotes.
      *
      * @param id the quote ID
      * @return the quote response
+     * @throws IllegalArgumentException if quote not found
      */
     public QuoteResponse getQuote(Long id) {
         Quote quote = quoteRepository.findById(id)

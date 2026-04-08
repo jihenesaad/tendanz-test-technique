@@ -12,9 +12,6 @@ import java.time.LocalDateTime;
  * Entity representing a quote for an insurance product.
  * Contains client information, pricing details, and applied rules.
  *
- * TODO: Complete the implementation with proper validation and business logic.
- * TODO: Ensure appliedRules field properly stores and retrieves JSON data.
- * TODO: Add any additional fields needed for quote tracking.
  */
 @Entity
 @Table(name = "quote", indexes = {

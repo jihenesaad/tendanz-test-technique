@@ -26,12 +26,15 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * Test class for PricingService.
  *
- * TODO: Add more comprehensive tests covering:
- * - Different age categories
- * - Different zones and their risk coefficients
- * - Edge cases (minimum and maximum ages)
- * - Validation of pricing calculations
- * - Error handling scenarios
+ * TODO: Implement at least 5 test cases covering:
+ * - Quote calculation for different age categories (YOUNG, ADULT, SENIOR, ELDERLY)
+ * - Different zone risk coefficients
+ * - Edge cases (minimum age 18, maximum age 99, boundary between categories)
+ * - Error handling (invalid product ID, invalid zone code)
+ * - Quote retrieval by ID
+ *
+ * The @BeforeEach setUp() method below creates test data you can use.
+ * Add your test methods below the existing structure.
  */
 @DataJpaTest
 @Import({PricingService.class, ObjectMapper.class})
@@ -58,7 +61,7 @@ class PricingServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Create test data
+        // Test data: Auto Insurance, zone coefficient 1.20, standard age factors
         product = Product.builder()
                 .name("Test Auto Insurance")
                 .description("Test Description")
@@ -67,119 +70,86 @@ class PricingServiceTest {
         productRepository.save(product);
 
         zone = Zone.builder()
-                .code("TEST-ZONE")
-                .name("Test Zone")
-                .riskCoefficient(BigDecimal.valueOf(1.0))
+                .code("TUN")
+                .name("Grand Tunis")
+                .riskCoefficient(BigDecimal.valueOf(1.20))
                 .build();
         zoneRepository.save(zone);
 
         pricingRule = PricingRule.builder()
                 .product(product)
                 .baseRate(BigDecimal.valueOf(500.00))
-                .ageFactorYoung(BigDecimal.valueOf(1.3))
-                .ageFactorAdult(BigDecimal.valueOf(1.0))
-                .ageFactorSenior(BigDecimal.valueOf(1.2))
-                .ageFactorElderly(BigDecimal.valueOf(1.5))
+                .ageFactorYoung(BigDecimal.valueOf(1.30))
+                .ageFactorAdult(BigDecimal.valueOf(1.00))
+                .ageFactorSenior(BigDecimal.valueOf(1.20))
+                .ageFactorElderly(BigDecimal.valueOf(1.50))
                 .createdAt(LocalDateTime.now())
                 .build();
         pricingRuleRepository.save(pricingRule);
     }
 
     /**
-     * Test quote calculation for an adult client.
+     * TODO: Test quote calculation for an adult client (age 25-45).
      *
-     * TODO: Implement and expand this test:
-     * - Verify the calculated final price
-     * - Check that base price is correctly set
-     * - Validate that age factor is applied correctly
-     * - Ensure zone risk coefficient is applied
+     * Expected: 500.00 × 1.00 (adult) × 1.20 (Tunis) = 600.00 TND
      */
     @Test
     void testCalculateQuoteForAdult() {
-        QuoteRequest request = QuoteRequest.builder()
-                .productId(product.getId())
-                .zoneCode(zone.getCode())
-                .clientName("John Doe")
-                .clientAge(30)
-                .build();
-
-        QuoteResponse response = pricingService.calculateQuote(request);
-
-        assertNotNull(response);
-        assertNotNull(response.getQuoteId());
-        assertEquals("Test Auto Insurance", response.getProductName());
-        assertEquals("Test Zone", response.getZoneName());
-        assertEquals("John Doe", response.getClientName());
-        assertEquals(30, response.getClientAge());
-        assertEquals(BigDecimal.valueOf(500.00), response.getBasePrice());
-        // Adult factor is 1.0, zone coefficient is 1.0, so final should be 500.00
-        assertEquals(BigDecimal.valueOf(500.00), response.getFinalPrice());
-        assertNotNull(response.getAppliedRules());
-        assertFalse(response.getAppliedRules().isEmpty());
+        // TODO: Implement this test
+        // Hint: Use QuoteRequest.builder() to create the request
+        // Then call pricingService.calculateQuote(request)
+        // Assert: finalPrice == 600.00, basePrice == 500.00, etc.
     }
 
     /**
-     * Test quote calculation for a young client with higher age factor.
+     * TODO: Test quote calculation for a young client (age 18-24).
      *
-     * TODO: Implement test for:
-     * - YOUNG age category (18-24)
-     * - Age factor of 1.3 (30% increase)
-     * - Verify final price calculation: 500 * 1.3 * 1.0 = 650
+     * Expected: 500.00 × 1.30 (young) × 1.20 (Tunis) = 780.00 TND
      */
     @Test
     void testCalculateQuoteForYoungClient() {
-        QuoteRequest request = QuoteRequest.builder()
-                .productId(product.getId())
-                .zoneCode(zone.getCode())
-                .clientName("Jane Smith")
-                .clientAge(22)
-                .build();
-
-        QuoteResponse response = pricingService.calculateQuote(request);
-
-        assertNotNull(response);
-        assertEquals(22, response.getClientAge());
-        assertEquals(BigDecimal.valueOf(500.00), response.getBasePrice());
-        // Young factor is 1.3, zone coefficient is 1.0, so final should be 650.00
-        assertEquals(BigDecimal.valueOf(650.00), response.getFinalPrice());
-        assertNotNull(response.getAppliedRules());
+        // TODO: Implement this test
     }
 
     /**
-     * TODO: Add test for zone risk coefficient calculation
-     * - Test with different zone risk coefficients
-     * - Verify that zone coefficient is properly applied to final price
+     * TODO: Test quote calculation for a senior client (age 46-65).
+     *
+     * Expected: 500.00 × 1.20 (senior) × 1.20 (Tunis) = 720.00 TND
+     */
+    @Test
+    void testCalculateQuoteForSeniorClient() {
+        // TODO: Implement this test
+    }
+
+    /**
+     * TODO: Test that requesting a quote with an invalid product ID
+     * throws IllegalArgumentException.
+     */
+    @Test
+    void testCalculateQuoteWithInvalidProductId() {
+        // TODO: Implement this test
+        // Hint: Use assertThrows(IllegalArgumentException.class, () -> ...)
+    }
+
+    /**
+     * TODO: Test that requesting a quote with an invalid zone code
+     * throws IllegalArgumentException.
+     */
+    @Test
+    void testCalculateQuoteWithInvalidZoneCode() {
+        // TODO: Implement this test
+    }
+
+    /**
+     * TODO: (Bonus) Test quote retrieval by ID.
+     * Create a quote, then retrieve it with pricingService.getQuote(id).
+     * Verify all fields match.
      */
 
     /**
-     * TODO: Add test for invalid product ID
-     * - Should throw IllegalArgumentException
-     * - Should not create a quote
-     */
-
-    /**
-     * TODO: Add test for invalid zone code
-     * - Should throw IllegalArgumentException
-     * - Should not create a quote
-     */
-
-    /**
-     * TODO: Add test for edge cases
-     * - Minimum age (18)
-     * - Maximum age (99)
-     * - Boundary between age categories
-     */
-
-    /**
-     * TODO: Add test for quote retrieval
-     * - Create a quote
-     * - Retrieve it by ID
-     * - Verify all fields are correctly returned
-     */
-
-    /**
-     * TODO: Add test for applied rules storage
-     * - Verify that applied rules are correctly stored as JSON
-     * - Verify that rules can be deserialized properly
+     * TODO: (Bonus) Test edge cases: age boundaries.
+     * - Age 24 should be YOUNG, age 25 should be ADULT
+     * - Age 45 should be ADULT, age 46 should be SENIOR
+     * - Age 65 should be SENIOR, age 66 should be ELDERLY
      */
 }

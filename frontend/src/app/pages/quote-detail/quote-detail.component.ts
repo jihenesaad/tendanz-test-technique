@@ -8,22 +8,18 @@ import { QuoteResponse } from '../../models/quote.model';
  * Component for displaying the details of a single quote
  *
  * TODO: Candidate must implement the following:
- * 1. Get quote ID from route parameters
+ * 1. Get quote ID from route parameters (hint: this.route.snapshot.paramMap.get('id'))
  *
- * 2. Load quote details from QuoteService using the ID
+ * 2. Load quote details from QuoteService.getQuote(id)
  *
  * 3. Display complete quote information:
- *    - Customer details (name, email, phone)
- *    - Insurance details (product, zone, amount, dates)
- *    - Age and pricing information
- *    - Applied pricing rules
- *    - Final price calculation breakdown
+ *    - Client details (name, age)
+ *    - Insurance details (product, zone)
+ *    - Pricing breakdown (base price, applied rules, final price)
  *
- * 4. Show loading state while fetching data
+ * 4. Handle loading state while fetching data
  *
- * 5. Show error message if quote cannot be loaded
- *
- * 6. Provide back button to return to quote list
+ * 5. Handle error state if quote cannot be loaded
  */
 @Component({
   selector: 'app-quote-detail',
@@ -47,39 +43,5 @@ export class QuoteDetailComponent implements OnInit {
     // TODO: Load quote from QuoteService
     // TODO: Handle loading and error states
     console.log('Quote detail component initialized (TODO: implement)');
-  }
-
-  /**
-   * Calculate the breakdown of the pricing
-   *
-   * TODO: This is helper method to display pricing details
-   * Calculate:
-   * - Base price (basePrice * duration)
-   * - Age modifier impact
-   * - Zone modifier impact
-   * - Final price
-   */
-  getBaseTotal(): number {
-    if (!this.quote) return 0;
-    // TODO: Calculate base price * duration
-    return 0;
-  }
-
-  /**
-   * Get the age modifier impact on price
-   */
-  getAgeModifierImpact(): number {
-    if (!this.quote) return 0;
-    // TODO: Calculate impact of age modifier
-    return 0;
-  }
-
-  /**
-   * Get the zone modifier impact on price
-   */
-  getZoneModifierImpact(): number {
-    if (!this.quote) return 0;
-    // TODO: Calculate impact of zone modifier
-    return 0;
   }
 }

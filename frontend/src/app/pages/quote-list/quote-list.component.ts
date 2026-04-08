@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { QuoteService } from '../../services/quote.service';
 import { ProductService } from '../../services/product.service';
@@ -11,31 +11,22 @@ import { Product } from '../../models/product.model';
  * Component for displaying a list of all quotes
  *
  * TODO: Candidate must implement the following:
- * 1. Load all quotes on component initialization using QuoteService
+ * 1. Load all quotes on component initialization using QuoteService.getQuotes()
  *
- * 2. Implement filtering:
- *    - Filter by product (dropdown with all products)
- *    - Filter by minimum price
- *    - Apply filters by calling QuoteService.getQuotes(filters)
+ * 2. Load products for filter dropdown using ProductService.getProducts()
  *
- * 3. Implement sorting:
+ * 3. Implement filtering in applyFilters():
+ *    - Build filter object from selectedProductId and minPrice
+ *    - Call QuoteService.getQuotes(filters)
+ *    - Update filteredQuotes with results
+ *
+ * 4. Implement sorting in sortQuotes():
  *    - Sort by creation date (ascending/descending)
  *    - Sort by final price (ascending/descending)
- *    - Update displayed quotes when sort changes
  *
- * 4. Display quotes in a table with columns:
- *    - ID
- *    - Customer Name
- *    - Product
- *    - Zone
- *    - Final Price
- *    - Created Date
+ * 5. Implement viewQuote() to navigate to /quotes/:id
  *
- * 5. Make table rows clickable to navigate to quote detail page
- *
- * 6. Show loading state while data is being fetched
- *
- * 7. Show error message if API call fails
+ * 6. Handle loading and error states
  */
 @Component({
   selector: 'app-quote-list',
@@ -61,7 +52,8 @@ export class QuoteListComponent implements OnInit {
 
   constructor(
     private quoteService: QuoteService,
-    private productService: ProductService
+    private productService: ProductService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +69,7 @@ export class QuoteListComponent implements OnInit {
    * - Get filter values from component properties
    * - Call quoteService.getQuotes(filters)
    * - Update filteredQuotes with results
+   * - Call sortQuotes() after receiving results
    * - Handle errors
    */
   applyFilters(): void {
@@ -85,42 +78,46 @@ export class QuoteListComponent implements OnInit {
   }
 
   /**
-   * Reset all filters
-   *
-   * TODO: Implement reset
-   * - Clear filter values
-   * - Reload all quotes
+   * Reset all filters and reload all quotes
    */
   resetFilters(): void {
-    // TODO: Reset filters and reload
+    this.selectedProductId = null;
+    this.minPrice = null;
+    // TODO: Reload all quotes
   }
 
   /**
-   * Change sort field
+   * Toggle sort direction or change sort field
    */
   changeSortField(field: 'date' | 'price'): void {
-    // TODO: Implement sorting
-    // If clicking the same field, toggle direction
-    // Otherwise, set new field and reset to ascending
-    console.log('Sort field changed to:', field);
+    if (this.sortField === field) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortField = field;
+      this.sortDirection = 'asc';
+    }
+    this.sortQuotes();
   }
 
   /**
-   * Sort quotes in memory
+   * Sort filteredQuotes in memory
    *
    * TODO: Implement sorting
-   * - Sort this.filteredQuotes based on sortField and sortDirection
    * - For 'date': sort by createdAt
    * - For 'price': sort by finalPrice
+   * - Apply sortDirection (asc/desc)
    */
   private sortQuotes(): void {
-    // TODO: Implement in-memory sorting
+    // TODO: Implement in-memory sorting of this.filteredQuotes
   }
 
   /**
    * Navigate to quote detail page
+   *
+   * TODO: Implement navigation to /quotes/:id
+   * Hint: use this.router.navigate(['/quotes', id])
    */
   viewQuote(id: number): void {
-    // Navigation is handled by routerLink in template
+    // TODO: Navigate to quote detail
   }
 }

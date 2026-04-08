@@ -1,40 +1,26 @@
 /**
- * Quote Request DTO - sent to backend when creating a new quote
- * Matches the backend QuoteRequestDTO
+ * Quote Request DTO - sent to backend when creating a new quote.
+ * Must match the backend QuoteRequest DTO fields exactly.
  */
 export interface QuoteRequest {
-  customerName: string;
-  email: string;
-  phone: string;
   productId: number;
-  zone: string;
-  age: number;
-  insuredAmount: number;
-  startDate: string; // ISO date format: YYYY-MM-DD
-  duration: number; // in months
+  zoneCode: string;
+  clientName: string;
+  clientAge: number;
 }
 
 /**
- * Quote Response DTO - returned from backend
- * Matches the backend QuoteResponseDTO
+ * Quote Response DTO - returned from backend after creating or fetching a quote.
+ * Must match the backend QuoteResponse DTO fields exactly.
  */
 export interface QuoteResponse {
-  id: number;
-  customerName: string;
-  email: string;
-  phone: string;
-  productId: number;
+  quoteId: number;
   productName: string;
-  zone: string;
-  age: number;
-  insuredAmount: number;
-  startDate: string; // ISO date format
-  duration: number; // in months
+  zoneName: string;
+  clientName: string;
+  clientAge: number;
   basePrice: number;
-  ageModifier: number;
-  zoneModifier: number;
-  appliedRules: string[]; // list of rule names that were applied
   finalPrice: number;
+  appliedRules: string[];
   createdAt: string; // ISO timestamp
-  updatedAt: string; // ISO timestamp
 }
