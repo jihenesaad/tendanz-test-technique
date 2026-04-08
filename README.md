@@ -65,6 +65,4 @@ Voir l'énoncé complet dans le document Word fourni.
 - README mis à jour avec vos choix techniques
 - Commits Git propres et progressifs
 
-### Délai : 48 heures
-
 Bonne chance !
