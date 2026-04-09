@@ -36,9 +36,9 @@ export class ProductService {
    * - Handle errors with catchError
    */
   getProducts(): Observable<Product[]> {
-    // TODO: GET from ${this.apiUrl}${this.endpoint}
-    // TODO: Handle errors with catchError
-    throw new Error('Method not implemented');
+    return this.http.get<Product[]>(`${this.apiUrl}${this.endpoint}`).pipe(
+      catchError ((error) => this.handleError(error))
+    );
   }
 
   /**
@@ -50,7 +50,8 @@ export class ProductService {
    * TODO: Implement error handling if needed
    */
   private handleError(error: any): Observable<never> {
-    console.error('Product service error:', error);
-    return throwError(() => new Error('Failed to load products'));
+    console.error('Quote service error:', error);
+    const message = error.error?.message || 'Failed to fetch products';
+    return throwError(() => new Error(message));
   }
 }
