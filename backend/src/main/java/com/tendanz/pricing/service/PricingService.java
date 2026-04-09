@@ -163,6 +163,32 @@ public class PricingService {
         return mapToResponse(quote, appliedRules);
     }
 
+    public List<QuoteResponse> getAllQuotes(Long productId, BigDecimal minPrice) {
+
+        List<Quote> quotes;
+
+        if (productId != null && minPrice != null) {
+            quotes = quoteRepository.findByProductId(productId)
+                    .stream()
+                    .filter(q -> q.getFinalPrice().compareTo(minPrice) >= 0)
+                    .toList();
+
+        } else if (productId != null) {
+            quotes = quoteRepository.findByProductId(productId);
+
+        } else if (minPrice != null) {
+            quotes = quoteRepository.findByFinalPriceWithThreshold(minPrice);
+
+        } else {
+            quotes = quoteRepository.findAll();
+        }
+
+        return quotes.stream()
+                .map(q -> mapToResponse(q, deserializeRules(q.getAppliedRules())))
+                .toList();
+    }
+
+
     /**
      * Deserialize the rules JSON string back to a list.
      *
