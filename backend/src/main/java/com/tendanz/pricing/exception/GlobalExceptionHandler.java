@@ -46,8 +46,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
-        // TODO: Implement validation error handling
-        throw new UnsupportedOperationException("TODO: Implement handleValidationExceptions");
+        Map<String, String> fieldErrors = new HashMap<>();
+
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            fieldErrors.put(error.getField(), error.getDefaultMessage());
+        });
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("error", "Validation Failed");
+        response.put("fieldErrors", fieldErrors);
+        response.put("timestamp", LocalDateTime.now());
+
+        return ResponseEntity.badRequest().body(response);
     }
 
     /**
@@ -64,8 +75,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
             IllegalArgumentException ex) {
-        // TODO: Implement not-found error handling
-        throw new UnsupportedOperationException("TODO: Implement handleIllegalArgumentException");
+        log.error("Resource not found: {}", ex.getMessage(), ex);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.NOT_FOUND.value());
+        response.put("error", "Not Found");
+        response.put("message", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     /**
@@ -81,7 +98,13 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneralException(Exception ex) {
-        // TODO: Implement generic error handling
-        throw new UnsupportedOperationException("TODO: Implement handleGeneralException");
+        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.put("error", "Internal Server Error");
+        response.put("message", "An unexpected error occurred. Please try again later.");
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
