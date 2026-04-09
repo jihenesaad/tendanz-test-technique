@@ -12,11 +12,14 @@ import com.tendanz.pricing.repository.QuoteRepository;
 import com.tendanz.pricing.repository.ZoneRepository;
 import com.tendanz.pricing.service.PricingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -70,7 +73,7 @@ class PricingServiceTest {
         productRepository.save(product);
 
         zone = Zone.builder()
-                .code("TUN")
+                .code("BENAROUS")
                 .name("Grand Tunis")
                 .riskCoefficient(BigDecimal.valueOf(1.20))
                 .build();
@@ -95,10 +98,22 @@ class PricingServiceTest {
      */
     @Test
     void testCalculateQuoteForAdult() {
-        // TODO: Implement this test
         // Hint: Use QuoteRequest.builder() to create the request
         // Then call pricingService.calculateQuote(request)
         // Assert: finalPrice == 600.00, basePrice == 500.00, etc.
+        QuoteRequest request = QuoteRequest.builder()
+                .productId(product.getId())
+                .zoneCode("BENAROUS")
+                .clientAge(30)
+                .clientName("Jihene Saad")
+                .build();
+
+        QuoteResponse response = pricingService.calculateQuote(request);
+
+        assertThat(response.getBasePrice()).isEqualByComparingTo(BigDecimal.valueOf(500.00));
+        assertThat(response.getFinalPrice()).isEqualByComparingTo(BigDecimal.valueOf(600.00));
+        assertThat(response.getClientAge()).isEqualTo(30);
+        assertThat(response.getClientName()).isEqualTo("Jihene Saad");
     }
 
     /**
@@ -108,7 +123,19 @@ class PricingServiceTest {
      */
     @Test
     void testCalculateQuoteForYoungClient() {
-        // TODO: Implement this test
+        QuoteRequest request = QuoteRequest.builder()
+                .productId(product.getId())
+                .zoneCode("BENAROUS")
+                .clientAge(20)
+                .clientName("Jihene Saad")
+                .build();
+
+        QuoteResponse response = pricingService.calculateQuote(request);
+
+        assertThat(response.getBasePrice()).isEqualByComparingTo(BigDecimal.valueOf(500.00));
+        assertThat(response.getFinalPrice()).isEqualByComparingTo(BigDecimal.valueOf(780.00));
+        assertThat(response.getClientAge()).isEqualTo(20);
+        assertThat(response.getClientName()).isEqualTo("Jihene Saad");
     }
 
     /**
@@ -118,7 +145,19 @@ class PricingServiceTest {
      */
     @Test
     void testCalculateQuoteForSeniorClient() {
-        // TODO: Implement this test
+        QuoteRequest request = QuoteRequest.builder()
+                .productId(product.getId())
+                .zoneCode("BENAROUS")
+                .clientAge(50)
+                .clientName("Jihene Saad")
+                .build();
+
+        QuoteResponse response = pricingService.calculateQuote(request);
+
+        assertThat(response.getBasePrice()).isEqualByComparingTo(BigDecimal.valueOf(500.00));
+        assertThat(response.getFinalPrice()).isEqualByComparingTo(BigDecimal.valueOf(720.00));
+        assertThat(response.getClientAge()).isEqualTo(50);
+        assertThat(response.getClientName()).isEqualTo("Jihene Saad");
     }
 
     /**
@@ -127,8 +166,16 @@ class PricingServiceTest {
      */
     @Test
     void testCalculateQuoteWithInvalidProductId() {
-        // TODO: Implement this test
         // Hint: Use assertThrows(IllegalArgumentException.class, () -> ...)
+        QuoteRequest request = QuoteRequest.builder()
+                .productId(999L)
+                .zoneCode("BENAROUS")
+                .clientAge(30)
+                .clientName("Jihene Saad")
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> pricingService.calculateQuote(request));
     }
 
     /**
@@ -137,7 +184,15 @@ class PricingServiceTest {
      */
     @Test
     void testCalculateQuoteWithInvalidZoneCode() {
-        // TODO: Implement this test
+        QuoteRequest request = QuoteRequest.builder()
+                .productId(product.getId())
+                .zoneCode("INVALID")
+                .clientAge(30)
+                .clientName("Jihene Saad")
+                .build();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> pricingService.calculateQuote(request));
     }
 
     /**
@@ -145,6 +200,26 @@ class PricingServiceTest {
      * Create a quote, then retrieve it with pricingService.getQuote(id).
      * Verify all fields match.
      */
+    @Test
+    void testCreateAndRetrieveQuoteById() {
+        QuoteRequest request = QuoteRequest.builder()
+                .productId(product.getId())
+                .zoneCode(zone.getCode())
+                .clientAge(30)
+                .clientName("Jihene Saad")
+                .build();
+
+        QuoteResponse response = pricingService.calculateQuote(request);
+        QuoteResponse retrieved = pricingService.getQuote(response.getQuoteId());
+
+        assertThat(retrieved.getQuoteId()).isEqualTo(response.getQuoteId());
+        assertThat(retrieved.getClientName()).isEqualTo("Jihene Saad");
+        assertThat(retrieved.getClientAge()).isEqualTo(30);
+        assertThat(retrieved.getBasePrice()).isEqualByComparingTo(response.getBasePrice());
+        assertThat(retrieved.getFinalPrice()).isEqualByComparingTo(response.getFinalPrice());
+        assertThat(retrieved.getZoneName()).isEqualTo(zone.getName()); // ou zone.getName()
+        assertThat(retrieved.getProductName()).isEqualTo(product.getName());
+    }
 
     /**
      * TODO: (Bonus) Test edge cases: age boundaries.
@@ -152,4 +227,50 @@ class PricingServiceTest {
      * - Age 45 should be ADULT, age 46 should be SENIOR
      * - Age 65 should be SENIOR, age 66 should be ELDERLY
      */
+    @Test
+    void testAgeBoundaries() {
+        // Arrange + Act
+        QuoteResponse young24 = pricingService.calculateQuote(
+                QuoteRequest.builder().productId(product.getId()).zoneCode(zone.getCode()).clientAge(24).clientName("Mariam").build()
+        );
+        QuoteResponse adult25 = pricingService.calculateQuote(
+                QuoteRequest.builder().productId(product.getId()).zoneCode(zone.getCode()).clientAge(25).clientName("Ahmed").build()
+        );
+
+        QuoteResponse adult45 = pricingService.calculateQuote(
+                QuoteRequest.builder().productId(product.getId()).zoneCode(zone.getCode()).clientAge(45).clientName("Aicha").build()
+        );
+        QuoteResponse senior46 = pricingService.calculateQuote(
+                QuoteRequest.builder().productId(product.getId()).zoneCode(zone.getCode()).clientAge(46).clientName("Mohamed").build()
+        );
+
+        QuoteResponse senior65 = pricingService.calculateQuote(
+                QuoteRequest.builder().productId(product.getId()).zoneCode(zone.getCode()).clientAge(65).clientName("Fatma").build()
+        );
+        QuoteResponse elderly66 = pricingService.calculateQuote(
+                QuoteRequest.builder().productId(product.getId()).zoneCode(zone.getCode()).clientAge(66).clientName("Ali").build()
+        );
+
+        //Assert
+        assertThat(young24.getFinalPrice()).isEqualByComparingTo(
+                pricingRule.getBaseRate().multiply(pricingRule.getAgeFactorYoung()).multiply(zone.getRiskCoefficient())
+        );
+        assertThat(adult25.getFinalPrice()).isEqualByComparingTo(
+                pricingRule.getBaseRate().multiply(pricingRule.getAgeFactorAdult()).multiply(zone.getRiskCoefficient())
+        );
+
+        assertThat(adult45.getFinalPrice()).isEqualByComparingTo(
+                pricingRule.getBaseRate().multiply(pricingRule.getAgeFactorAdult()).multiply(zone.getRiskCoefficient())
+        );
+        assertThat(senior46.getFinalPrice()).isEqualByComparingTo(
+                pricingRule.getBaseRate().multiply(pricingRule.getAgeFactorSenior()).multiply(zone.getRiskCoefficient())
+        );
+
+        assertThat(senior65.getFinalPrice()).isEqualByComparingTo(
+                pricingRule.getBaseRate().multiply(pricingRule.getAgeFactorSenior()).multiply(zone.getRiskCoefficient())
+        );
+        assertThat(elderly66.getFinalPrice()).isEqualByComparingTo(
+                pricingRule.getBaseRate().multiply(pricingRule.getAgeFactorElderly()).multiply(zone.getRiskCoefficient())
+        );
+    }
 }
