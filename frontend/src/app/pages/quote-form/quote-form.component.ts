@@ -61,15 +61,12 @@ export class QuoteFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loading = true;
     this.productService.getProducts().subscribe({
       next : products =>{
         this.products = products;
-        this.loading = false;
       },
       error : err =>{
         this.errorMessage = (err.message || "Failed to load Products")
-        this.loading = false;
       }
     });
   }
