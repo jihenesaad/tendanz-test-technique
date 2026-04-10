@@ -61,9 +61,17 @@ export class QuoteFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // TODO: Load products from ProductService
-    // TODO: Populate this.products array
-    // TODO: Handle loading and error states
+    this.loading = true;
+    this.productService.getProducts().subscribe({
+      next : products =>{
+        this.products = products;
+        this.loading = false;
+      },
+      error : err =>{
+        this.errorMessage = (err.message || "Failed to load Products")
+        this.loading = false;
+      }
+    });
   }
 
   /**
@@ -80,8 +88,31 @@ export class QuoteFormComponent implements OnInit {
    */
   onSubmit(): void {
     this.submitted = true;
-    // TODO: Implement form submission
-    console.log('Form submitted (TODO: implement)');
+    this.errorMessage = null;
+    this.successMessage = null;
+    if(this.form.invalid){
+      this.form.markAllAsTouched();
+      return;
+    } 
+    this.loading=true;
+
+    const QuoteRequest = {
+      productId: this.form.value.productId,
+      zoneCode: this.form.value.zoneCode,
+      clientName: this.form.value.clientName,
+      clientAge: this.form.value.clientAge
+    }
+    this.quoteService.createQuote(QuoteRequest).subscribe({
+      next: createdQuote => {
+        this.successMessage="Quote created successfully";
+        this.loading= false;
+        this.router.navigate(['/quotes', createdQuote.quoteId]);
+      },
+      error: err =>{
+        this.errorMessage= err.message || "Failed to create a quote";
+        this.loading=false;
+      }
+    })
   }
 
   /**
