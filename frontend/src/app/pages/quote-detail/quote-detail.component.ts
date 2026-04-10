@@ -56,4 +56,13 @@ export class QuoteDetailComponent implements OnInit {
       }
     });
   }
+  exportPDF(): void {
+  this.quoteService.downloadPdf(this.quote!.quoteId).subscribe(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Quote Details.pdf`;
+    a.click();
+  });
+}
 }

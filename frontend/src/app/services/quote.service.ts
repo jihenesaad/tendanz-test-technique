@@ -80,6 +80,12 @@ export class QuoteService {
     return this.http.get<any>(`${this.apiUrl}/quotes`, { params });
   }
 
+  downloadPdf(id: number): Observable<Blob> {
+  return this.http.get(`${this.apiUrl}/quotes/${id}/pdf`, {
+    responseType: 'blob'
+  });
+  }
+
   /**
    * Handle HTTP errors
    *

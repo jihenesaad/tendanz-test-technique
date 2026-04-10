@@ -1,5 +1,15 @@
 package com.tendanz.pricing.service;
 
+import java.io.ByteArrayOutputStream;
+import com.itextpdf.layout.Document;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import com.tendanz.pricing.dto.QuoteRequest;
 import com.tendanz.pricing.dto.QuoteResponse;
 import com.tendanz.pricing.entity.PricingRule;
@@ -21,11 +31,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 /**
  * Service for handling pricing and quote calculations.
@@ -198,5 +211,111 @@ public class PricingService {
             log.error("Error deserializing rules from JSON", e);
             return new ArrayList<>();
         }
+    }
+
+    public byte[] generateQuotePdf(Long quoteId) {
+        Quote quote = quoteRepository.findById(quoteId)
+                .orElseThrow(() -> new RuntimeException("Quote not found"));
+
+        List<String> rules = deserializeRules(quote.getAppliedRules());
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            PdfWriter writer = new PdfWriter(baos);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc);
+
+            //Titre
+            document.add(new Paragraph("INSURANCE QUOTE DETAILS")
+                    .setFontSize(18)
+                    .setBold()
+                    .setFontColor(ColorConstants.DARK_GRAY)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(25));
+
+            document.add(new Paragraph(
+                    "Please find below the details of your insurance quote. " +
+                            "This document summarizes the pricing breakdown and the rules applied to your profile.")
+                    .setFontSize(11)
+                    .setFontColor(ColorConstants.GRAY)
+                    .setMarginBottom(5));
+
+            //Client Information
+            document.add(new Paragraph("Client Information")
+                    .setFontSize(14).setBold().setMarginBottom(8));
+
+            Table clientTable = new Table(UnitValue.createPercentArray(new float[]{40, 60}))
+                    .setWidth(UnitValue.createPercentValue(100));
+            clientTable.addCell(cell("Name", true));
+            clientTable.addCell(cell(quote.getClientName(), false));
+            clientTable.addCell(cell("Age", true));
+            clientTable.addCell(cell(quote.getClientAge() + " years", false));
+            document.add(clientTable);
+
+            document.add(new Paragraph(" "));
+
+            //Insurance Details
+            document.add(new Paragraph("Insurance Details")
+                    .setFontSize(14).setBold().setMarginBottom(8));
+
+            Table insuranceTable = new Table(UnitValue.createPercentArray(new float[]{40, 60}))
+                    .setWidth(UnitValue.createPercentValue(100));
+            insuranceTable.addCell(cell("Product", true));
+            insuranceTable.addCell(cell(quote.getProduct().getName(), false));
+            insuranceTable.addCell(cell("Zone", true));
+            insuranceTable.addCell(cell(quote.getZone().getName(), false));
+            document.add(insuranceTable);
+
+            document.add(new Paragraph(" "));
+
+            //Applied Rules
+            document.add(new Paragraph("Applied Pricing Rules")
+                    .setFontSize(14).setBold().setMarginBottom(8));
+
+            if (rules == null || rules.isEmpty()) {
+                document.add(new Paragraph("No rules applied").setFontColor(ColorConstants.GRAY));
+            } else {
+                for (String rule : rules) {
+                    document.add(new Paragraph("• " + rule).setMarginLeft(10));
+                }
+            }
+
+            document.add(new Paragraph(" "));
+
+            //Pricing Summary
+            document.add(new Paragraph("Pricing Summary")
+                    .setFontSize(14).setBold().setMarginBottom(8));
+
+            Table priceTable = new Table(UnitValue.createPercentArray(new float[]{40, 60}))
+                    .setWidth(UnitValue.createPercentValue(100));
+            priceTable.addCell(cell("Base Price", true));
+            priceTable.addCell(cell(quote.getBasePrice() + " TND", false));
+            priceTable.addCell(cell("Final Price", true));
+            priceTable.addCell(cell(quote.getFinalPrice() + " TND", false)
+                    .setBold().setFontColor(ColorConstants.DARK_GRAY));
+            document.add(priceTable);
+
+            document.add(new Paragraph(" "));
+
+
+            document.add(new Paragraph("Date: " + LocalDateTime.now().format(
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")))
+                    .setFontSize(9)
+                    .setFontColor(ColorConstants.GRAY)
+                    .setTextAlignment(TextAlignment.RIGHT));
+
+            document.close();
+            return baos.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate PDF", e);
+        }
+    }
+
+    private Cell cell(String content, boolean isLabel) {
+        Cell c = new Cell().add(new Paragraph(content)).setPadding(6);
+        if (isLabel) {
+            c.setBackgroundColor(ColorConstants.LIGHT_GRAY).setBold();
+        }
+        return c;
     }
 }
