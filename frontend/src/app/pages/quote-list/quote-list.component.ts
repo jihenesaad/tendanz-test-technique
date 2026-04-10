@@ -50,6 +50,12 @@ export class QuoteListComponent implements OnInit {
   sortField: 'date' | 'price' = 'date';
   sortDirection: 'asc' | 'desc' = 'desc';
 
+  // Pagination
+  currentPage = 0;
+  pageSize = 3;
+  totalPages = 0;
+  totalElements = 0;
+
   constructor(
     private quoteService: QuoteService,
     private productService: ProductService,
@@ -57,28 +63,39 @@ export class QuoteListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loading=true;
-    this.quoteService.getQuotes().subscribe({
-      next: quotes => {
-        this.quotes = quotes;
-        this.filteredQuotes = quotes; 
-        this.sortQuotes()
-        this.loading=false;
+    this.loadQuotes();
+
+    this.productService.getProducts().subscribe({
+      next: products => this.products = products,
+      error: err => this.errorMessage = err.message || "Failed to load Products"
+    });
+  }
+
+  private loadQuotes(): void {
+    this.loading = true;
+
+    const filters: any = {
+      page: this.currentPage,
+      size: this.pageSize
+    };
+
+    this.quoteService.getQuotes(filters).subscribe({
+      next: res => {
+        console.log('RAW response:', res);
+        this.filteredQuotes = res.content;
+        this.totalPages = res.totalPages;
+        this.totalElements = res.totalElements;
+
+        this.sortQuotes();
+        this.loading = false;
       },
       error: err => {
-        this.loading=false;
-        this.errorMessage=err.message || "Failed to load products"
-      }
-    });
-    this.productService.getProducts().subscribe({
-      next : products =>{
-        this.products = products;
-      },
-      error : err =>{
-        this.errorMessage = (err.message || "Failed to load Products")
+        this.loading = false;
+        this.errorMessage = err.message || "Failed to load quotes";
       }
     });
   }
+
 
   /**
    * Apply filters to the quotes
@@ -91,29 +108,40 @@ export class QuoteListComponent implements OnInit {
    * - Handle errors
    */
   applyFilters(): void {
-    const filters : {
-      productId?: number
-      minPrice?: number}={};
-      
-      if(this.selectedProductId){
-        filters.productId=this.selectedProductId;
-      }
-      if(this.minPrice){
-        filters.minPrice=this.minPrice;
-      }
-      this.loading = true;
-      this.quoteService.getQuotes(filters).subscribe({
-        next: quoteList => {
-          this.filteredQuotes=quoteList;
-          this.sortQuotes();
-          this.loading=false;
-        },
-        error: (err) => {
-          this.loading = false;
-          this.errorMessage = err.message || "Failed to apply filters";
-        }
-      });
+  const filters: {
+    productId?: number;
+    minPrice?: number;
+    page?: number;
+    size?: number;
+  } = {
+    page: 0,       // reset to first page on filter
+    size: this.pageSize
+  };
+
+  if (this.selectedProductId) {
+    filters.productId = this.selectedProductId;
   }
+  if (this.minPrice) {
+    filters.minPrice = this.minPrice;
+  }
+
+  this.loading = true;
+  this.currentPage = 0; // keep pagination state in sync
+
+  this.quoteService.getQuotes(filters).subscribe({
+    next: res => {                          // treat it like a Page<T>
+      this.filteredQuotes = res.content;   // ← extract .content, just like loadQuotes()
+      this.totalPages = res.totalPages;
+      this.totalElements = res.totalElements;
+      this.sortQuotes();
+      this.loading = false;
+    },
+    error: (err) => {
+      this.loading = false;
+      this.errorMessage = err.message || "Failed to apply filters";
+    }
+  });
+}
 
   /**
    * Reset all filters and reload all quotes
@@ -121,8 +149,22 @@ export class QuoteListComponent implements OnInit {
   resetFilters(): void {
     this.selectedProductId = null;
     this.minPrice = null;
-    this.filteredQuotes = this.quotes;
-    this.sortQuotes();
+    this.currentPage = 0;
+    this.loadQuotes();
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.loadQuotes();
+    }
+  }
+
+  prevPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.loadQuotes();
+    }
   }
 
   /**

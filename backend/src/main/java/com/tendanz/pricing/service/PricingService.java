@@ -13,6 +13,10 @@ import com.tendanz.pricing.repository.QuoteRepository;
 import com.tendanz.pricing.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -163,29 +167,20 @@ public class PricingService {
         return mapToResponse(quote, appliedRules);
     }
 
-    public List<QuoteResponse> getAllQuotes(Long productId, BigDecimal minPrice) {
-
-        List<Quote> quotes;
-
+    public Page<QuoteResponse> getAllQuotes(Long productId, BigDecimal minPrice, Pageable pageable) {
+        Page<Quote> quotePage;
         if (productId != null && minPrice != null) {
-            quotes = quoteRepository.findByProductId(productId)
-                    .stream()
-                    .filter(q -> q.getFinalPrice().compareTo(minPrice) >= 0)
-                    .toList();
-
+            quotePage = quoteRepository.findByProductIdAndFinalPriceGreaterThanEqual(productId, minPrice, pageable);
         } else if (productId != null) {
-            quotes = quoteRepository.findByProductId(productId);
-
+            quotePage = quoteRepository.findByProductId(productId, pageable);
         } else if (minPrice != null) {
-            quotes = quoteRepository.findByFinalPriceWithThreshold(minPrice);
-
+            quotePage = quoteRepository.findByFinalPriceWithThreshold(minPrice, pageable);
         } else {
-            quotes = quoteRepository.findAll();
+            quotePage = quoteRepository.findAll(pageable);
         }
-
-        return quotes.stream()
-                .map(q -> mapToResponse(q, deserializeRules(q.getAppliedRules())))
-                .toList();
+        return quotePage.map(q ->
+                mapToResponse(q, deserializeRules(q.getAppliedRules()))
+        );
     }
 
 

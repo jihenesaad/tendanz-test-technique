@@ -71,20 +71,13 @@ export class QuoteService {
    *
    * TODO: Implement this method
    */
-  getQuotes(filters?: { productId?: number; minPrice?: number }): Observable<QuoteResponse[]> {
+  getQuotes(filters: any = {}): Observable<any> {
     let params = new HttpParams();
-
-    if (filters?.productId) {
-      params = params.set('productId', filters.productId);
-    }
-
-    if (filters?.minPrice) {
-      params = params.set('minPrice', filters.minPrice);
-    }
-
-    return this.http.get<QuoteResponse[]>(`${this.apiUrl}${this.endpoint}`, { params }).pipe(
-      catchError((error) => this.handleError(error))
-    );
+    if (filters.productId != null) params = params.set('productId', filters.productId);
+    if (filters.minPrice != null) params = params.set('minPrice', filters.minPrice);
+    params = params.set('page', filters.page ?? 0);
+    params = params.set('size', filters.size ?? 5);
+    return this.http.get<any>(`${this.apiUrl}/quotes`, { params });
   }
 
   /**

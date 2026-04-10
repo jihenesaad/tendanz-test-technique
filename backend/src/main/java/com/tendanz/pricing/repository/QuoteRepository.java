@@ -1,6 +1,8 @@
 package com.tendanz.pricing.repository;
 
 import com.tendanz.pricing.entity.Quote;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,12 +25,14 @@ import java.util.List;
 @Repository
 public interface QuoteRepository extends JpaRepository<Quote, Long> {
 
-    List<Quote> findByClientName(String clientName);
+    Page<Quote> findByClientName(String clientName, Pageable pageable);
 
-    List<Quote> findByProductId(Long productId);
+    Page<Quote> findByProductId(Long productId, Pageable pageable);
 
     @Query("SELECT q FROM Quote q WHERE q.finalPrice >= :threshold")
-    List<Quote> findByFinalPriceWithThreshold(@Param("threshold") BigDecimal threshold);
+    Page<Quote> findByFinalPriceWithThreshold(@Param("threshold") BigDecimal threshold, Pageable pageable);
+
+    Page<Quote> findByProductIdAndFinalPriceGreaterThanEqual(Long productId, BigDecimal minPrice, Pageable pageable);
 
 
 }

@@ -84,3 +84,16 @@
     <p>No quotes found. <a routerLink="/quotes/new">Create one now</a></p>
   </div>
 </div>
+
+<!-- Pagination -->
+<div *ngIf="!loading && totalPages > 1" class="pagination">
+  <button (click)="prevPage()" [disabled]="currentPage === 0">
+    ⬅ Previous
+  </button>
+  <span>
+    Page {{ currentPage + 1 }} / {{ totalPages }}
+  </span>
+  <button (click)="nextPage()" [disabled]="currentPage === totalPages - 1">
+    Next ➡
+  </button>
+</div>
